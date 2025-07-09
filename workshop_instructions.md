@@ -49,36 +49,22 @@ logging.basicConfig(level=logging.INFO)
 
 ## Deploy your changes
 
-For the purpose of this workshop there is a default CD pipeline configured in `.github/workflows/deploy.yml` or `.gitlab-ci.yml` depending on your platform. In order to make use of this you will need to:
-* Update that pipeline file to contain your DockerHub username
-* In Azure, under your App Service's "Deployment Center", update the image name/tag to `<your_dockerhub_username>/unit-10-order-processing-app`
-* Grab the "Webhook URL" from the Deployment Center and add it to your CI pipeline secrets/variables as `AZURE_WEBHOOK`
-  * If using GitLab, make sure that the "Expand variable" option is off, and the secret is masked and available to your branch
-* [Generate a DockerHub token](https://docs.docker.com/docker-hub/access-tokens/#create-an-access-token) and set it in the repository pipeline secrets/variables under `DOCKERHUB_TOKEN`
+For the purpose of this workshop there is a default CD pipeline configured in `.github/workflows/deploy.yml`
 
-When you're ready, push those changes to your fork which will update your DockerHub image and notify your server to pull the latest and restart.
+In order to make use of this you will need to:
+* Create an Azure Container Registry (ACR) Instance and enable the Admin User (under `Access Keys`)
+  * Copy the Admin User name, Password and Login Server URL for future reference (the latter can be found on the Overview tab on ACR)
+* In Azure, under your App Service's "Deployment Center", update the image name/tag to `${ACR_LOGIN_SERVER_URL}/monitoring_workshop/unit-10-order-processing-app`
+* Grab the `Webhook URL` from the App Service Deployment Center and add it to ACR as a Webhook
+  * This can be found under `Services` => `Webhooks` => `Add` (the App Service Webhook URL is set as the `Service URI`)
+* Update [the deployment pipeline file](./.github/workflows/deploy.yml) with your ACR login server URL and admin username
+* Add a GitHub repository secret with the name `ACR_ADMIN_PASSWORD` with your ACR Admin password
+* Enable GitHub Actions by clicking the the `Actions` link on your GitHub fork and click the green button to enable Actions for your repository 
 
-If you find this step slow, or just prefer to release manually, then you will still need to update the App Service but can always build & push the latest image directly 
-```bash
-docker build --tag ${DOCKERHUB_USERNAME}/unit-10-order-processing-app --target production .
-docker push ${DOCKERHUB_USERNAME}/unit-10-order-processing-app
-```
+When you're ready, push those changes to your fork which will update your ACR image.
+* The webhook will then notify the App Service to update with the new image
 
-You'll also need to trigger the webhook - you can do this directly, or you can register that with DockerHub to do that for you.
-
-<details><summary>Register a webhook in DockerHub</summary>
-
-DockerHub allows you to register webhooks on individual image repositories, you can find that through:
-1) Signing in
-1) Navigating to "My Profile" from the dropdown by your username
-1) Selecting the relevant image repository
-1) Selecting "Manage Repository"
-1) Select the "Webhooks" tab and entering appropriate details
-
-Or alternatively by jumping to this URL with the appropriate values completed:
-
-https://hub.docker.com/repository/docker/\<YOUR_USERNAME\>/\<IMAGE_NAME\>/webhooks
-</details>
+Alternatively you can run the pipeline steps manually (handy for debugging).
 
 ## Investigate and fix
 
