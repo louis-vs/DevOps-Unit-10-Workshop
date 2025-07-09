@@ -6,11 +6,11 @@ jobs:
   my-job:
     runs-on: ubuntu-latest
     env:
-        # REPLACE THIS
-        DOCKERHUB_USERNAME: corndeldevopscourse
+        # SET THESE
+        ACR_ADMIN_USERNAME: "<FILL ME IN>"
+        ACR_LOGIN_SERVER_URL: "<FILL ME IN>"
         # SET THESE IN GITHUB
-        DOCKERHUB_TOKEN: '${{ secrets.DOCKERHUB_TOKEN }}'
-        AZURE_WEBHOOK: '${{ secrets.AZURE_WEBHOOK }}'
+        ACR_ADMIN_PASSWORD: '${{ secrets.ACR_ADMIN_PASSWORD }}'
     # DECIDE WHETHER YOU WANT A BRANCH CHECK - if so remove the other "if"
     # if: github.ref == 'refs/heads/main'
     if: github.repository != 'corndeladmin/DevOps-Unit-10-Workshop'
@@ -20,10 +20,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
       - name: Build image
-        run: docker build --tag ${DOCKERHUB_USERNAME}/unit-10-order-processing-app --target production .
+        run: docker build --tag ${ACR_LOGIN_SERVER_URL}/monitoring_workshop/unit-10-order-processing-app --target production .
       - name: Docker login
-        run: echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
+        run: echo $ACR_ADMIN_PASSWORD | docker login -u $ACR_ADMIN_USERNAME --password-stdin ${ACR_LOGIN_SERVER_URL}
       - name: Push image
-        run: docker push ${DOCKERHUB_USERNAME}/unit-10-order-processing-app
-      - name: Trigger deployment
-        run: curl --fail-with-body -X POST "$AZURE_WEBHOOK"
+        run: docker push ${ACR_LOGIN_SERVER_URL}/monitoring_workshop/unit-10-order-processing-app
